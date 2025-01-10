@@ -25,8 +25,11 @@ public class RutaInicial extends RouteBuilder {
     @ConfigProperty(name = "urlConsultar1")
     String url1;
 
+    @ConfigProperty(name = "twilioauth")
+    String twilioauth;
+
     public static final String ACCOUNT_SID = "AC56ce2f93147d375a1d44f0c62ebb2b4d";
-    public static final String AUTH_TOKEN = "7f423d5503452a9d2548fa3e935ad380";
+  //  public static final String AUTH_TOKEN = "7f423d5503452a9d2548fa3e935ad380";
 
 
     @Override
@@ -90,7 +93,7 @@ public class RutaInicial extends RouteBuilder {
 
                     String celular = (String) exchange.getProperty("celular");
                     celular = celular.trim();
-                 Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+                 Twilio.init(ACCOUNT_SID, twilioauth);
                    Message message = Message.creator(
                                    new com.twilio.type.PhoneNumber("whatsapp:+57"+celular),
                                    new com.twilio.type.PhoneNumber("whatsapp:+14155238886"),
