@@ -50,6 +50,7 @@ public class RutaInicial extends RouteBuilder {
                 .setHeader("origin", simple("https://webfenix.movilidadbogota.gov.co"))
                 .doTry()
                 .toD(url1 + "${exchangeProperty.cedula}?bridgeEndpoint=true")
+                .log("RESPUESTA BACK: ${body}")
                 .to("direct:envioNoti")
                 .doCatch(Exception.class)
                 .log("HUBO UN ERROR AL CONSUMIR EL APi: ${exception}")
