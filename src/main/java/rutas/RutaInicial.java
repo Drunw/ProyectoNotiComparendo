@@ -60,7 +60,7 @@ public class RutaInicial extends RouteBuilder {
                 .end()
                 .end();
 
-        from("direct:rutaConsultaInicial2").routeId("ConsultaInicial")
+        from("direct:rutaConsultaInicial2").routeId("ConsultaInicial2")
                 .setBody(simple(cedulas.toString()))
                 .log("SE INICIA LA CONSULTA DE CEDULAS.")
                 .split().body()
