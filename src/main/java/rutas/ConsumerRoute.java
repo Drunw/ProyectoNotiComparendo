@@ -15,7 +15,7 @@ public class ConsumerRoute extends RouteBuilder {
                 .bindingMode(RestBindingMode.auto);
 
         from("timer://myTimer?period=900000")  // 30000 ms = 30 segundos
-                .to("direct:rutaConsultaInicial");
+                .to("direct:rutaConsultaInicial2");
 
         from("timer://myTimer?period=28800000")  // 30000 ms = 30 segundos
                 .to("direct:rutaConsultaInicial");
