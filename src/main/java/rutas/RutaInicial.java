@@ -60,6 +60,33 @@ public class RutaInicial extends RouteBuilder {
                 .end()
                 .end();
 
+        from("direct:rutaConsultaInicial2").routeId("ConsultaInicial")
+                .setBody(simple(cedulas.toString()))
+                .log("SE INICIA LA CONSULTA DE CEDULAS.")
+                .split().body()
+                .process(exchange -> {
+                    String cedulas = (String) exchange.getIn().getBody();
+                    String[] partes = cedulas.split("-");
+                    exchange.setProperty("cedula", partes[0]);
+                    exchange.setProperty("celular", partes[1]);
+                })
+                .removeHeaders("*")
+                .setHeader(Exchange.HTTP_METHOD, simple("GET"))
+                .setHeader(Exchange.CONTENT_TYPE, simple("application/json"))
+                .setHeader("ocp-apim-subscription-key", simple("e69beca20a9942f381a2e80c072e451b"))
+                .setHeader("origin", simple("https://webfenix.movilidadbogota.gov.co"))
+                .doTry()
+                .toD(url1 + "${exchangeProperty.cedula}?bridgeEndpoint=true")
+                .log("RESPUESTA BACK: ${body}")
+          //      .to("direct:envioNoti")
+                .doCatch(Exception.class)
+                .log("HUBO UN ERROR AL CONSUMIR EL APi: ${exception}")
+                .setBody(simple("${exception}"))
+                .convertBodyTo(String.class)
+                .to("direct:sendEmail")
+                .end()
+                .end();
+
        from("direct:envioNoti").routeId("EnvioNotificacion")
                .choice().when(simple("${body} != null"))
                .log("ENVIANDO NOTIFICACION.")
