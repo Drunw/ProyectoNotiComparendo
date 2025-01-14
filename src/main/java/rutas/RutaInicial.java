@@ -71,7 +71,7 @@ public class RutaInicial extends RouteBuilder {
                     exchange.setProperty("celular", partes[1]);
                 })
                 .removeHeaders("*")
-                .setHeader(Exchange.HTTP_METHOD, simple("GET"))
+                .setHeader(Exchange.HTTP_METHOD, simple("POST"))
                 .setHeader(Exchange.CONTENT_TYPE, simple("application/json"))
                 .setHeader("ocp-apim-subscription-key", simple("e69beca20a9942f381a2e80c072e451b"))
                 .setHeader("origin", simple("https://webfenix.movilidadbogota.gov.co"))
