@@ -26,9 +26,6 @@ public class RutaInicial extends RouteBuilder {
     @ConfigProperty(name = "urlConsultar1")
     String url1;
 
-    @ConfigProperty(name = "twilioauth")
-    String twilioauth;
-
     public static final String ACCOUNT_SID = "AC56ce2f93147d375a1d44f0c62ebb2b4d";
   //  public static final String AUTH_TOKEN = "7f423d5503452a9d2548fa3e935ad380";
 
