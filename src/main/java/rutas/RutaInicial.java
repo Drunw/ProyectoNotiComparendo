@@ -4,6 +4,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.http.protocol.HTTP;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
@@ -63,6 +64,7 @@ public class RutaInicial extends RouteBuilder {
 
        from("direct:envioNoti").routeId("EnvioNotificacion")
                .choice().when(simple("${body} != null"))
+               .log("ENVIANDO NOTIFICACION.")
                .convertBodyTo(String.class)
                .unmarshal().json()
                .process(exchange -> {
@@ -84,22 +86,21 @@ public class RutaInicial extends RouteBuilder {
                                .append(", Saldo Pendiente: ").append(item.get("saldoPendiente"))
                                .append(", Intereses: ").append(item.get("interes"))
                                .append(", Total: ").append(item.get("total")).append(".")
-                               .append("\n").append("\n");
+                               .append("\\n");
                        contador++; // Incrementamos el contador después de cada iteración
                    }
 
                    // Imprimir el texto final
-                   String mensaje = "Buen dia, se le informa que tiene los siguientes comparendos pendientes: \n\n" + texto;
+                   String mensaje = "Buen dia, se le informa que tiene los siguientes comparendos pendientes: \\n" + texto;
 
                     String celular = (String) exchange.getProperty("celular");
                     celular = celular.trim();
-                 Twilio.init(ACCOUNT_SID, twilioauth);
-                   Message message = Message.creator(
-                                   new com.twilio.type.PhoneNumber("whatsapp:+57"+celular),
-                                   new com.twilio.type.PhoneNumber("whatsapp:+14155238886"),
-                                   "" + mensaje)
-                           .create();
+                    exchange.setProperty("celular",celular);
+                    exchange.setProperty("mensaje",mensaje);
                })
+               .log("celular: ${exchangeProperty.celular} mensaje: ${exchangeProperty.mensaje}")
+               .to("velocity:/request.vm?allowContextMapAll=true&encoding=UTF-8")
+               .to("direct:sendWp")
                .otherwise()
                .log("NO SE NOTIFICARA")
                 .end();
@@ -110,7 +111,7 @@ public class RutaInicial extends RouteBuilder {
                     LocalDateTime now = LocalDateTime.now();
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     String timestamp = now.format(formatter);  // Formatear la fecha y hora
-                    String subject = "REVISAR TWILIO EXCEPCION: " + excepcion + " "+ timestamp;
+                    String subject = "REVISAR EXCEPCION: " + excepcion + " "+ timestamp;
                     String to = "halodani31.ldra@gmail.com"; // Dirección de correo del destinatario
 
                     exchange.getIn().setHeader("Subject", subject);
@@ -120,5 +121,19 @@ public class RutaInicial extends RouteBuilder {
                 })
                 .to("smtp://smtp.gmail.com:587?username=halodani31.ldra@gmail.com&password=xlod%20qbiu%20aszz%20fkwr&from=halodani31.ldra@gmail.com&to=halodani31.ldra@gmail.com&subject=ATENCION&mail.smtp.auth=true&mail.smtp.starttls.enable=true");
 
+        from("direct:sendWp").routeId("sendWp")
+                .setHeader(Exchange.CONTENT_TYPE,simple("application/json"))
+                .setHeader(Exchange.HTTP_METHOD,simple("POST"))
+                .doTry()
+                .log("json a ser enviado: ${body}")
+                .to("https://pruebasmandawp.onrender.com/lead?bridgeEndpoint=true")
+                .log("Body enviado correctamente: ${body}")
+                .doCatch(Exception.class)
+                .log("Ha ocurrido un error al intentar enviar el mensaje: ${exception}")
+                .setBody(simple("${exception}"))
+                .convertBodyTo(String.class)
+                .to("direct:sendEmail")
+                .end()
+                .end();
     }
 }

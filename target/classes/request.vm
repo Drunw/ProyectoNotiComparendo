@@ -1,0 +1,4 @@
+{
+    "message": "$!{exchange.properties.mensaje}",
+    "phone": "57$!{exchange.properties.celular}"
+}
